@@ -1,42 +1,6 @@
-import OpenAI from "openai";
+const OpenAI = require("openai");
 
-export interface AnalysisRequest {
-  resumeText: string;
-  jobDescription: string;
-  purpose: "before-applying" | "after-rejection";
-}
-
-export interface EmailFixRequest {
-  emailDraft: string;
-  purpose: string;
-}
-
-export interface EmailFixResult {
-  improvedEmail: string;
-  explanation: string;
-  improvements: string[];
-  tone: string;
-  professionalismScore?: number;
-  clarityScore?: number;
-  effectivenessScore?: number;
-}
-
-export interface AnalysisResult {
-  matchScore: number;
-  missingKeywords: string[];
-  suggestions: string[];
-  rewriteExamples: Array<{
-    original: string;
-    improved: string;
-  }>;
-  overallFeedback: string;
-  coverLetter?: string;
-  atsScore?: number;
-  atsOptimizations?: string[];
-}
-
-export class OpenAIService {
-  private openai: OpenAI;
+class OpenAIService {
 
   constructor() {
     console.log("OpenAI API Key present:", !!process.env.OPENAI_API_KEY);
@@ -54,7 +18,7 @@ export class OpenAIService {
     });
   }
 
-  async analyzeResume(request: AnalysisRequest): Promise<AnalysisResult> {
+  async analyzeResume(request) {
     try {
       const prompt = this.buildResumePrompt(request);
 
@@ -91,7 +55,7 @@ export class OpenAIService {
     }
   }
 
-  async improveEmail(request: EmailFixRequest): Promise<EmailFixResult> {
+  async improveEmail(request) {
     try {
       const prompt = this.buildEmailPrompt(request);
 
@@ -128,7 +92,7 @@ export class OpenAIService {
     }
   }
 
-  private buildResumePrompt(request: AnalysisRequest): string {
+  buildResumePrompt(request) {
     const purposeContext =
       request.purpose === "before-applying"
         ? "The candidate is preparing to apply for this position and wants to optimize their resume."
@@ -174,7 +138,7 @@ ${request.resumeText}
 Please ensure your response is valid JSON and focuses on practical, actionable advice.`;
   }
 
-  private parseResumeResponse(response: string): AnalysisResult {
+  parseResumeResponse(response) {
     try {
       // Try to extract JSON from the response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -208,7 +172,7 @@ Please ensure your response is valid JSON and focuses on practical, actionable a
     }
   }
 
-  private isValidAnalysisResult(obj: any): obj is AnalysisResult {
+  isValidAnalysisResult(obj) {
     return (
       typeof obj === "object" &&
       typeof obj.matchScore === "number" &&
@@ -219,8 +183,8 @@ Please ensure your response is valid JSON and focuses on practical, actionable a
     );
   }
 
-  private buildEmailPrompt(request: EmailFixRequest): string {
-    const purposeMap: Record<string, string> = {
+  buildEmailPrompt(request) {
+    const purposeMap = {
       "job-followup": "following up on a job application",
       apology: "apologizing professionally",
       "client-pitch": "pitching to a potential client",
@@ -266,7 +230,7 @@ ${request.emailDraft}
 Please provide specific improvements and explain your changes.`;
   }
 
-  private parseEmailResponse(response: string): EmailFixResult {
+  parseEmailResponse(response) {
     try {
       // Try to extract JSON from the response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -298,7 +262,7 @@ Please provide specific improvements and explain your changes.`;
     }
   }
 
-  private isValidEmailResult(obj: any): obj is EmailFixResult {
+  isValidEmailResult(obj) {
     return (
       typeof obj === "object" &&
       typeof obj.improvedEmail === "string" &&
@@ -314,3 +278,5 @@ Please provide specific improvements and explain your changes.`;
     );
   }
 }
+
+module.exports = { OpenAIService };

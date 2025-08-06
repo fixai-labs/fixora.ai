@@ -1,14 +1,7 @@
-import mammoth from "mammoth";
+const mammoth = require("mammoth");
 
-export interface ProcessedFile {
-  text: string;
-  filename: string;
-  size: number;
-  type: string;
-}
-
-export class FileProcessor {
-  static async processFile(file: Express.Multer.File): Promise<ProcessedFile> {
+class FileProcessor {
+  static async processFile(file) {
     let text = "";
 
     try {
@@ -52,7 +45,7 @@ export class FileProcessor {
     }
   }
 
-  private static async processWord(buffer: Buffer): Promise<string> {
+  static async processWord(buffer) {
     try {
       const result = await mammoth.extractRawText({ buffer });
       return result.value;
@@ -61,7 +54,7 @@ export class FileProcessor {
     }
   }
 
-  private static cleanText(text: string): string {
+  static cleanText(text) {
     return (
       text
         // Remove excessive whitespace
@@ -73,10 +66,7 @@ export class FileProcessor {
     );
   }
 
-  static validateFile(file: Express.Multer.File): {
-    isValid: boolean;
-    error?: string;
-  } {
+  static validateFile(file) {
     const allowedTypes = [
       // "application/pdf", // Temporarily disabled
       "application/msword",
@@ -103,3 +93,5 @@ export class FileProcessor {
     return { isValid: true };
   }
 }
+
+module.exports = { FileProcessor };

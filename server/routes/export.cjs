@@ -1,5 +1,5 @@
-import express from 'express';
-import { PDFService, PDFExportData } from '../services/pdfService';
+const express = require('express');
+const { PDFService } = require('../services/pdfService.cjs');
 
 const router = express.Router();
 
@@ -25,7 +25,7 @@ router.post('/export-pdf', async (req, res) => {
       });
     }
 
-    const exportData: PDFExportData = {
+    const exportData = {
       resumeFilename,
       analysisResult,
       jobDescription,
@@ -53,4 +53,4 @@ router.post('/export-pdf', async (req, res) => {
   }
 });
 
-export { router as exportRoute };
+module.exports = { exportRoute: router };

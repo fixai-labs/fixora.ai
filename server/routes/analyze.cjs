@@ -1,6 +1,6 @@
-import express from "express";
-import { OpenAIService, AnalysisRequest } from "../services/openaiService";
-import { checkUsageLimit, incrementUsage } from "../middleware/usageLimit";
+const express = require("express");
+const { OpenAIService } = require("../services/openaiService.cjs");
+const { checkUsageLimit, incrementUsage } = require("../middleware/usageLimit.cjs");
 
 const router = express.Router();
 const openaiService = new OpenAIService();
@@ -75,4 +75,4 @@ router.post("/analyze", checkUsageLimit, incrementUsage, async (req, res) => {
   }
 });
 
-export { router as analyzeRoute };
+module.exports = { analyzeRoute: router };

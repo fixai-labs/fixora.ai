@@ -1,7 +1,7 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import multer from "multer";
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const multer = require("multer");
 
 // Load environment variables
 dotenv.config();
@@ -24,14 +24,14 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Import multer configuration
-import { upload } from "./config/multer";
-import { UsageService } from "./services/usageService";
+const { upload } = require("./config/multer.cjs");
+const { UsageService } = require("./services/usageService.cjs");
 
 // Import routes
-import { analyzeRoute } from "./routes/analyze";
-import { uploadRoute } from "./routes/upload";
-import { exportRoute } from "./routes/export";
-import { emailRoute } from "./routes/email";
+const { analyzeRoute } = require("./routes/analyze.cjs");
+const { uploadRoute } = require("./routes/upload.cjs");
+const { exportRoute } = require("./routes/export.cjs");
+const { emailRoute } = require("./routes/email.cjs");
 
 // Routes
 app.use("/api", analyzeRoute);

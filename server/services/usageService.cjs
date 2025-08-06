@@ -1,34 +1,28 @@
-interface UsageRecord {
-  ip: string;
-  date: string;
-  count: number;
-}
+class UsageService {
+  static usageData = new Map();
+  static DAILY_LIMIT = 3;
 
-export class UsageService {
-  private static usageData: Map<string, UsageRecord> = new Map();
-  private static readonly DAILY_LIMIT = 3;
-
-  static getUsageKey(ip: string): string {
+  static getUsageKey(ip) {
     const today = new Date().toISOString().split('T')[0];
     return `${ip}-${today}`;
   }
 
-  static getCurrentUsage(ip: string): number {
+  static getCurrentUsage(ip) {
     const key = this.getUsageKey(ip);
     const record = this.usageData.get(key);
     return record ? record.count : 0;
   }
 
-  static getRemainingUsage(ip: string): number {
+  static getRemainingUsage(ip) {
     const current = this.getCurrentUsage(ip);
     return Math.max(0, this.DAILY_LIMIT - current);
   }
 
-  static canUseService(ip: string): boolean {
+  static canUseService(ip) {
     return this.getCurrentUsage(ip) < this.DAILY_LIMIT;
   }
 
-  static incrementUsage(ip: string): { success: boolean; remaining: number; limitReached: boolean } {
+  static incrementUsage(ip) {
     const key = this.getUsageKey(ip);
     const currentUsage = this.getCurrentUsage(ip);
 
@@ -56,12 +50,7 @@ export class UsageService {
     };
   }
 
-  static getUsageStatus(ip: string): {
-    used: number;
-    remaining: number;
-    limit: number;
-    canUse: boolean;
-  } {
+  static getUsageStatus(ip) {
     const used = this.getCurrentUsage(ip);
     const remaining = this.getRemainingUsage(ip);
     
@@ -74,7 +63,7 @@ export class UsageService {
   }
 
   // Clean up old usage records (run this periodically)
-  static cleanupOldRecords(): void {
+  static cleanupOldRecords() {
     const today = new Date().toISOString().split('T')[0];
     
     for (const [key, record] of this.usageData.entries()) {
@@ -84,3 +73,5 @@ export class UsageService {
     }
   }
 }
+
+module.exports = { UsageService };

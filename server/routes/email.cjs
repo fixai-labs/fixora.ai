@@ -1,6 +1,6 @@
-import express from "express";
-import { OpenAIService, EmailFixRequest } from "../services/openaiService";
-import { checkUsageLimit, incrementUsage } from "../middleware/usageLimit";
+const express = require("express");
+const { OpenAIService } = require("../services/openaiService.cjs");
+const { checkUsageLimit, incrementUsage } = require("../middleware/usageLimit.cjs");
 
 const router = express.Router();
 const openaiService = new OpenAIService();
@@ -51,7 +51,7 @@ router.post(
       }
 
       // Create email fix request
-      const emailRequest: EmailFixRequest = {
+      const emailRequest = {
         emailDraft,
         purpose,
       };
@@ -83,4 +83,4 @@ router.post(
   }
 );
 
-export { router as emailRoute };
+module.exports = { emailRoute: router };

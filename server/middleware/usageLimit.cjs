@@ -1,16 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import { UsageService } from '../services/usageService';
+const { UsageService } = require('../services/usageService.cjs');
 
-export interface RequestWithUsage extends Request {
-  usage?: {
-    used: number;
-    remaining: number;
-    limit: number;
-    canUse: boolean;
-  };
-}
-
-export const checkUsageLimit = (req: RequestWithUsage, res: Response, next: NextFunction) => {
+const checkUsageLimit = (req, res, next) => {
   try {
     const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
     const usageStatus = UsageService.getUsageStatus(clientIP);
@@ -44,7 +34,7 @@ export const checkUsageLimit = (req: RequestWithUsage, res: Response, next: Next
   }
 };
 
-export const incrementUsage = (req: RequestWithUsage, res: Response, next: NextFunction) => {
+const incrementUsage = (req, res, next) => {
   try {
     const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
     const result = UsageService.incrementUsage(clientIP);
@@ -72,3 +62,5 @@ export const incrementUsage = (req: RequestWithUsage, res: Response, next: NextF
     next(); // Continue on error
   }
 };
+
+module.exports = { checkUsageLimit, incrementUsage };

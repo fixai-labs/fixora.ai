@@ -1,15 +1,7 @@
-import puppeteer from 'puppeteer';
-import { AnalysisResult } from './openaiService';
+const puppeteer = require('puppeteer');
 
-export interface PDFExportData {
-  resumeFilename: string;
-  analysisResult: AnalysisResult;
-  jobDescription: string;
-  purpose: string;
-}
-
-export class PDFService {
-  private static generateHTML(data: PDFExportData): string {
+class PDFService {
+  static generateHTML(data) {
     const { resumeFilename, analysisResult, jobDescription, purpose } = data;
     
     return `
@@ -213,7 +205,7 @@ export class PDFService {
 </html>`;
   }
 
-  static async generatePDF(data: PDFExportData): Promise<Buffer> {
+  static async generatePDF(data) {
     let browser;
     
     try {
@@ -249,3 +241,5 @@ export class PDFService {
     }
   }
 }
+
+module.exports = { PDFService };

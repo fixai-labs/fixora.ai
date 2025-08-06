@@ -1,6 +1,6 @@
-import express from "express";
-import { upload } from "../config/multer";
-import { FileProcessor } from "../utils/fileProcessor";
+const express = require("express");
+const { upload } = require("../config/multer.cjs");
+const { FileProcessor } = require("../utils/fileProcessor.cjs");
 
 const router = express.Router();
 
@@ -49,4 +49,4 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
   }
 });
 
-export { router as uploadRoute };
+module.exports = { uploadRoute: router };
