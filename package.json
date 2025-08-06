@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"bun run dev:client\" \"bun run dev:server\"",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "vite",
-    "dev:server": "nodemon --exec \"bun run\" server/index.ts",
+    "dev:server": "nodemon server/index.ts",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "bun run server/index.ts"
+    "server": "ts-node server/index.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
