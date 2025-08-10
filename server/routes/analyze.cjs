@@ -43,7 +43,7 @@ router.post("/analyze", checkUsageLimit, incrementUsage, async (req, res) => {
     }
 
     // Create analysis request
-    const analysisRequest: AnalysisRequest = {
+    const analysisRequest = {
       resumeText,
       jobDescription,
       purpose,

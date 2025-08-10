@@ -3,8 +3,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const multer = require("multer");
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -79,12 +79,7 @@ app.get("/api/usage", (req, res) => {
 
 // Error handling middleware
 app.use(
-  (
-    error: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+  (error, req, res, next) => {
     console.error("Error:", error);
 
     if (error instanceof multer.MulterError) {

@@ -4,6 +4,13 @@ class FileProcessor {
   static async processFile(file) {
     let text = "";
 
+    console.log("Processing file:", {
+      filename: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+      bufferLength: file.buffer?.length
+    });
+
     try {
       switch (file.mimetype) {
         case "application/pdf":
@@ -13,10 +20,26 @@ class FileProcessor {
           break;
         case "application/msword":
         case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-          text = await this.processWord(file.buffer);
+          try {
+            text = await this.processWord(file.buffer);
+            if (!text || text.trim().length === 0) {
+              throw new Error("No text extracted from Word document");
+            }
+          } catch (wordError) {
+            console.error("Word processing failed, trying fallback:", wordError.message);
+            // Fallback: try to extract as plain text
+            try {
+              text = file.buffer.toString("utf-8");
+              console.log("Fallback text extraction, length:", text.length);
+            } catch (fallbackError) {
+              throw new Error(`Failed to process Word document: ${wordError.message}`);
+            }
+          }
           break;
         case "text/plain":
+          console.log("Processing text file");
           text = file.buffer.toString("utf-8");
+          console.log("Text file content length:", text.length);
           break;
         default:
           throw new Error(`Unsupported file type: ${file.mimetype}`);
@@ -25,8 +48,11 @@ class FileProcessor {
       // Clean up the extracted text
       text = this.cleanText(text);
 
-      if (!text.trim()) {
-        throw new Error("No text content could be extracted from the file");
+      console.log("Cleaned text length:", text.length);
+      console.log("Cleaned text preview:", text.substring(0, 100));
+
+      if (!text || !text.trim() || text.trim().length < 10) {
+        throw new Error(`No meaningful text content could be extracted from the file. Extracted text length: ${text ? text.length : 0}`);
       }
 
       return {
@@ -47,20 +73,30 @@ class FileProcessor {
 
   static async processWord(buffer) {
     try {
+      console.log("Processing Word document, buffer size:", buffer.length);
       const result = await mammoth.extractRawText({ buffer });
-      return result.value;
+      console.log("Extracted text length:", result.value?.length || 0);
+      console.log("Extracted text preview:", result.value?.substring(0, 100) || "No text");
+      return result.value || "";
     } catch (error) {
-      throw new Error("Failed to extract text from Word document");
+      console.error("Word processing error:", error);
+      throw new Error(`Failed to extract text from Word document: ${error.message}`);
     }
   }
 
   static cleanText(text) {
+    if (!text || typeof text !== 'string') {
+      return "";
+    }
+
     return (
       text
         // Remove excessive whitespace
         .replace(/\s+/g, " ")
         // Remove special characters that might interfere with processing
         .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, "")
+        // Remove any remaining null bytes or weird characters
+        .replace(/\0/g, "")
         // Trim whitespace
         .trim()
     );
