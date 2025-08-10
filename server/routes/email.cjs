@@ -1,6 +1,9 @@
 const express = require("express");
 const { OpenAIService } = require("../services/openaiService.cjs");
-const { checkUsageLimit, incrementUsage } = require("../middleware/usageLimit.cjs");
+const {
+  checkUsageLimit,
+  incrementUsage,
+} = require("../middleware/usageLimit.cjs");
 
 const router = express.Router();
 const openaiService = new OpenAIService();
