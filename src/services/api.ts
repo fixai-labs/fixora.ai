@@ -1,11 +1,13 @@
 const API_BASE_URL =
-  import.meta.env.VITE_SERVER_ROOT_URL || "http://localhost:3001/api";
+  import.meta.env.VITE_SERVER_ROOT_URL || "https://fixora-ai-be.vercel.app";
 
-console.log(
-  "import.meta.env.VITE_SERVER_ROOT_URL",
-  import.meta.env.VITE_SERVER_ROOT_URL
-);
-console.log("API_BASE_URL", API_BASE_URL);
+console.log("Environment variables:", {
+  VITE_SERVER_ROOT_URL: import.meta.env.VITE_SERVER_ROOT_URL,
+  MODE: import.meta.env.MODE,
+  DEV: import.meta.env.DEV,
+  PROD: import.meta.env.PROD,
+});
+console.log("Final API_BASE_URL:", API_BASE_URL);
 
 export interface AnalysisResult {
   matchScore: number;
