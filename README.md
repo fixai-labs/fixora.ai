@@ -50,7 +50,7 @@ MAX_FILE_SIZE=10485760
 ALLOWED_FILE_TYPES=application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain
 
 # Frontend Configuration
-VITE_API_URL=http://localhost:3001/api
+VITE_API_URL=http://localhost:3001
 ```
 
 ## Features

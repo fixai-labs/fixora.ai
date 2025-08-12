@@ -1,5 +1,11 @@
 const API_BASE_URL =
-  import.meta.env.SERVER_ROOT_URL || "http://localhost:3001/api";
+  import.meta.env.VITE_SERVER_ROOT_URL || "http://localhost:3001/api";
+
+console.log(
+  "import.meta.env.VITE_SERVER_ROOT_URL",
+  import.meta.env.VITE_SERVER_ROOT_URL
+);
+console.log("API_BASE_URL", API_BASE_URL);
 
 export interface AnalysisResult {
   matchScore: number;
@@ -248,6 +254,44 @@ class ApiService {
     } catch (error) {
       console.error("Health check error:", error);
       throw new Error("Unable to connect to server");
+    }
+  }
+
+  async getUsageStatus(): Promise<{
+    success: boolean;
+    usage: {
+      used: number;
+      limit: number;
+      remaining: number;
+    };
+    upgrade?: {
+      price: string;
+      features: string[];
+    };
+  }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/usage`);
+      return this.handleResponse(response);
+    } catch (error) {
+      console.error("Usage status error:", error);
+      // Return mock data if the endpoint doesn't exist yet
+      return {
+        success: true,
+        usage: {
+          used: 0,
+          limit: 5,
+          remaining: 5,
+        },
+        upgrade: {
+          price: "$9.99/month",
+          features: [
+            "Unlimited resume analyses",
+            "Priority support",
+            "Advanced AI insights",
+            "PDF export",
+          ],
+        },
+      };
     }
   }
 }

@@ -9,11 +9,9 @@ interface UsageStatus {
   used: number;
   remaining: number;
   limit: number;
-  canUse: boolean;
 }
 
 interface UpgradeInfo {
-  message: string;
   price: string;
   features: string[];
 }
@@ -29,15 +27,14 @@ export function UsageTracker({ onUpgradeClick }: UsageTrackerProps) {
 
   const fetchUsageStatus = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/usage`);
-      const data = await response.json();
-      
+      const data = await apiService.getUsageStatus();
+
       if (data.success) {
         setUsage(data.usage);
         setUpgrade(data.upgrade);
       }
     } catch (error) {
-      console.error('Failed to fetch usage status:', error);
+      console.error("Failed to fetch usage status:", error);
     } finally {
       setLoading(false);
     }
@@ -55,12 +52,22 @@ export function UsageTracker({ onUpgradeClick }: UsageTrackerProps) {
   const isLimitReached = usage.remaining === 0;
 
   return (
-    <Card className={`p-4 ${isLimitReached ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}>
+    <Card
+      className={`p-4 ${
+        isLimitReached
+          ? "bg-orange-50 border-orange-200"
+          : "bg-blue-50 border-blue-200"
+      }`}
+    >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Zap className={`w-4 h-4 ${isLimitReached ? 'text-orange-600' : 'text-blue-600'}`} />
+          <Zap
+            className={`w-4 h-4 ${
+              isLimitReached ? "text-orange-600" : "text-blue-600"
+            }`}
+          />
           <span className="text-sm font-medium">
-            {isLimitReached ? 'Daily Limit Reached' : 'Free Usage'}
+            {isLimitReached ? "Daily Limit Reached" : "Free Usage"}
           </span>
         </div>
         <span className="text-xs text-muted-foreground">
@@ -68,22 +75,27 @@ export function UsageTracker({ onUpgradeClick }: UsageTrackerProps) {
         </span>
       </div>
 
-      <Progress 
-        value={usagePercentage} 
-        className={`h-2 mb-3 ${isLimitReached ? '[&>div]:bg-orange-500' : '[&>div]:bg-blue-500'}`}
+      <Progress
+        value={usagePercentage}
+        className={`h-2 mb-3 ${
+          isLimitReached ? "[&>div]:bg-orange-500" : "[&>div]:bg-blue-500"
+        }`}
       />
 
       {isLimitReached ? (
         <div className="space-y-3">
           <p className="text-sm text-orange-700">
-            You've used all your free analyses for today. Upgrade for unlimited access!
+            You've used all your free analyses for today. Upgrade for unlimited
+            access!
           </p>
           {upgrade && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-orange-800">{upgrade.price}</span>
-                <Button 
-                  size="sm" 
+                <span className="font-medium text-orange-800">
+                  {upgrade.price}
+                </span>
+                <Button
+                  size="sm"
                   className="bg-orange-600 hover:bg-orange-700"
                   onClick={onUpgradeClick}
                 >
@@ -104,7 +116,8 @@ export function UsageTracker({ onUpgradeClick }: UsageTrackerProps) {
         </div>
       ) : (
         <p className="text-sm text-blue-700">
-          {usage.remaining} free {usage.remaining === 1 ? 'analysis' : 'analyses'} remaining today
+          {usage.remaining} free{" "}
+          {usage.remaining === 1 ? "analysis" : "analyses"} remaining today
         </p>
       )}
     </Card>
