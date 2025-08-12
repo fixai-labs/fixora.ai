@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => ({
         "http://localhost:8081",
         "http://localhost:3000",
         "https://fixora-ai.vercel.app",
+        "https://fixora-ai-be.vercel.app",
       ],
       credentials: true,
     },
