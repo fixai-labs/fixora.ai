@@ -12,7 +12,17 @@ const api = ky.create({
     methods: ["get", "post", "put", "delete"],
     statusCodes: [408, 413, 429, 500, 502, 503, 504],
   },
+  credentials: 'include', // Include credentials for CORS
+  headers: {
+    'Content-Type': 'application/json',
+  },
   hooks: {
+    beforeRequest: [
+      (request) => {
+        // Add CORS headers to requests
+        request.headers.set('Origin', window.location.origin);
+      }
+    ],
     beforeError: [
       async (error: any) => {
         const { response } = error;
