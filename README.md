@@ -7,16 +7,19 @@ AI-powered assistant to fix and improve emails, resumes, and proposals with clar
 ### Single Command Setup
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Run the application:**
+
    ```bash
    npm start
    ```
 
    Or use the convenient scripts:
+
    ```bash
    # Windows Batch
    run.bat
@@ -26,6 +29,7 @@ AI-powered assistant to fix and improve emails, resumes, and proposals with clar
    ```
 
 This will start both the frontend and backend servers:
+
 - **Frontend (React/Vite)**: http://localhost:5173
 - **Backend (Express/Node.js)**: http://localhost:3001
 
@@ -37,7 +41,6 @@ The application uses `.env.local` for environment variables:
 # Server Configuration
 PORT=3001
 NODE_ENV=development
-CLIENT_URL=http://localhost:5173
 
 # OpenAI Configuration
 OPENAI_API_KEY=your_openai_api_key_here
