@@ -1,18 +1,35 @@
-const API_BASE_URL =
-  import.meta.env.VITE_SERVER_ROOT_URL || "http://localhost:3001/api";
+import ky from "ky";
 
-console.log("Environment variables:", {
-  VITE_SERVER_ROOT_URL: import.meta.env.VITE_SERVER_ROOT_URL,
-  MODE: import.meta.env.MODE,
-  DEV: import.meta.env.DEV,
-  PROD: import.meta.env.PROD,
-  "import.meta.env keys": Object.keys(import.meta.env),
+const API_BASE_URL =
+  import.meta.env.VITE_SERVER_ROOT_URL || "https://fixora-ai-be.vercel.app/api";
+
+// Create a ky instance with default configuration
+const api = ky.create({
+  prefixUrl: API_BASE_URL,
+  timeout: 60000, // 60 second timeout
+  retry: {
+    limit: 2,
+    methods: ["get", "post", "put", "delete"],
+    statusCodes: [408, 413, 429, 500, 502, 503, 504],
+  },
+  hooks: {
+    beforeError: [
+      async (error: any) => {
+        const { response } = error;
+        if (response && response.status === 429) {
+          const errorData = await response.json().catch(() => ({
+            error: "Usage Limit Error",
+            message: "Usage limit exceeded",
+          }));
+          throw new UsageLimitError(
+            errorData.message || "Usage limit exceeded"
+          );
+        }
+        return error;
+      },
+    ],
+  },
 });
-console.log("Final API_BASE_URL:", API_BASE_URL);
-console.log(
-  "Environment variable loaded:",
-  import.meta.env.VITE_SERVER_ROOT_URL ? "YES" : "NO"
-);
 
 export interface AnalysisResult {
   matchScore: number;
@@ -71,25 +88,6 @@ export class UsageLimitError extends Error {
 }
 
 class ApiService {
-  private async handleResponse<T>(response: Response): Promise<T> {
-    if (!response.ok) {
-      const errorData: ApiError = await response.json().catch(() => ({
-        error: "Network Error",
-        message: `HTTP ${response.status}: ${response.statusText}`,
-      }));
-
-      // Handle usage limit errors specially
-      if (response.status === 429) {
-        throw new UsageLimitError(errorData.message || "Usage limit exceeded");
-      }
-
-      throw new Error(
-        errorData.message || errorData.error || "An error occurred"
-      );
-    }
-    return response.json();
-  }
-
   async uploadResume(
     file: File,
     onProgress?: (progress: number) => void
@@ -98,53 +96,22 @@ class ApiService {
     formData.append("resume", file);
 
     try {
-      // Create XMLHttpRequest for progress tracking
-      return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
+      // Simulate progress for better UX (ky doesn't support upload progress natively)
+      if (onProgress) {
+        onProgress(25);
+        setTimeout(() => onProgress(50), 500);
+        setTimeout(() => onProgress(75), 1000);
+        setTimeout(() => onProgress(95), 1500);
+      }
 
-        // Track upload progress
-        xhr.upload.addEventListener("progress", (event) => {
-          if (event.lengthComputable && onProgress) {
-            const progress = (event.loaded / event.total) * 100;
-            onProgress(Math.min(progress, 95)); // Cap at 95% for upload, leave 5% for processing
-          }
-        });
+      const response = await api
+        .post("upload", {
+          body: formData,
+        })
+        .json<UploadResponse>();
 
-        xhr.addEventListener("load", () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              if (onProgress) onProgress(100); // Complete
-              resolve(response);
-            } catch (error) {
-              reject(new Error("Invalid response format"));
-            }
-          } else {
-            try {
-              const errorData = JSON.parse(xhr.responseText);
-              reject(
-                new Error(
-                  errorData.message || errorData.error || `HTTP ${xhr.status}`
-                )
-              );
-            } catch {
-              reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
-            }
-          }
-        });
-
-        xhr.addEventListener("error", () => {
-          reject(new Error("Network error occurred"));
-        });
-
-        xhr.addEventListener("timeout", () => {
-          reject(new Error("Upload timeout"));
-        });
-
-        xhr.open("POST", `${API_BASE_URL}/upload`);
-        xhr.timeout = 60000; // 60 second timeout
-        xhr.send(formData);
-      });
+      if (onProgress) onProgress(100);
+      return response;
     } catch (error) {
       console.error("Upload error:", error);
       throw new Error(
@@ -163,19 +130,17 @@ class ApiService {
     console.log("Analyzing resume...");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/analyze`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          resumeText,
-          jobDescription,
-          purpose,
-        }),
-      });
+      const response = await api
+        .post("analyze", {
+          json: {
+            resumeText,
+            jobDescription,
+            purpose,
+          },
+        })
+        .json<AnalysisResponse>();
 
-      return this.handleResponse<AnalysisResponse>(response);
+      return response;
     } catch (error) {
       console.error("Analysis error:", error);
       throw new Error(
@@ -193,28 +158,14 @@ class ApiService {
     purpose: "before-applying" | "after-rejection"
   ): Promise<Blob> {
     try {
-      const response = await fetch(`${API_BASE_URL}/export-pdf`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const response = await api.post("export-pdf", {
+        json: {
           resumeFilename,
           analysisResult,
           jobDescription,
           purpose,
-        }),
+        },
       });
-
-      if (!response.ok) {
-        const errorData: ApiError = await response.json().catch(() => ({
-          error: "Export Error",
-          message: `HTTP ${response.status}: ${response.statusText}`,
-        }));
-        throw new Error(
-          errorData.message || errorData.error || "Export failed"
-        );
-      }
 
       return response.blob();
     } catch (error) {
@@ -232,18 +183,16 @@ class ApiService {
     purpose: string
   ): Promise<EmailFixResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/improve-email`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          emailDraft,
-          purpose,
-        }),
-      });
+      const response = await api
+        .post("improve-email", {
+          json: {
+            emailDraft,
+            purpose,
+          },
+        })
+        .json<EmailFixResponse>();
 
-      return this.handleResponse<EmailFixResponse>(response);
+      return response;
     } catch (error) {
       console.error("Email improvement error:", error);
       throw new Error(
@@ -256,8 +205,10 @@ class ApiService {
 
   async healthCheck(): Promise<{ status: string; message: string }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/health`);
-      return this.handleResponse(response);
+      const response = await api
+        .get("health")
+        .json<{ status: string; message: string }>();
+      return response;
     } catch (error) {
       console.error("Health check error:", error);
       throw new Error("Unable to connect to server");
@@ -277,11 +228,23 @@ class ApiService {
     };
   }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/usage`);
-      return this.handleResponse(response);
+      const response = await api.get("usage").json<{
+        success: boolean;
+        usage: {
+          used: number;
+          limit: number;
+          remaining: number;
+        };
+        upgrade?: {
+          price: string;
+          features: string[];
+        };
+      }>();
+      return response;
     } catch (error) {
       console.error("Usage status error:", error);
-      // Return mock data if the endpoint doesn't exist yet
+      // Return mock data if the endpoint doesn't exist yet or CORS issues
+      console.log("Falling back to mock data due to backend unavailability");
       return {
         success: true,
         usage: {
