@@ -17,4 +17,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // Ensure environment variables are available
+    "import.meta.env.VITE_SERVER_ROOT_URL": JSON.stringify(
+      process.env.VITE_SERVER_ROOT_URL || "https://fixora-ai-be.vercel.app/api"
+    ),
+  },
 }));
