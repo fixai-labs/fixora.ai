@@ -190,6 +190,7 @@ const Index = () => {
       // Validate file before upload
       const maxSize = 10 * 1024 * 1024; // 10MB
       const allowedTypes = [
+        "application/pdf",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "text/plain",
@@ -209,7 +210,7 @@ const Index = () => {
 
       if (!allowedTypes.includes(file.type)) {
         const error =
-          "Only Word documents (.docx) and text files (.txt) are supported";
+          "Only PDF, Word documents (.docx), and text files (.txt) are supported";
         setErrors((prev) => ({ ...prev, file: error }));
         toast({
           title: "Unsupported File Type",
@@ -256,7 +257,7 @@ const Index = () => {
         if (error instanceof Error) {
           if (error.message.includes("Invalid file type")) {
             errorMessage =
-              "Only Word documents (.docx) and text files (.txt) are supported";
+              "Only PDF, Word documents (.docx), and text files (.txt) are supported";
           } else if (error.message.includes("File too large")) {
             errorMessage = "File size must be less than 10MB";
           } else if (error.message.includes("extract")) {

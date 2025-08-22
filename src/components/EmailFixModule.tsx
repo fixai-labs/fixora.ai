@@ -307,7 +307,7 @@ export function EmailFixModule({
               <Card className="p-6">
                 <h4 className="font-semibold mb-3">What We Improved</h4>
                 <ul className="space-y-2">
-                  {result.improvements.map((improvement, index) => (
+                  {result?.improvements?.map((improvement, index) => (
                     <li key={index} className="flex items-start">
                       <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0" />
                       <span className="text-sm">{improvement}</span>

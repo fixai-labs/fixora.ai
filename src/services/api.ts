@@ -12,16 +12,13 @@ const api = ky.create({
     methods: ["get", "post", "put", "delete"],
     statusCodes: [408, 413, 429, 500, 502, 503, 504],
   },
-  credentials: 'include', // Include credentials for CORS
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  credentials: "include", // Include credentials for CORS
   hooks: {
     beforeRequest: [
       (request) => {
         // Add CORS headers to requests
-        request.headers.set('Origin', window.location.origin);
-      }
+        request.headers.set("Origin", window.location.origin);
+      },
     ],
     beforeError: [
       async (error: any) => {
@@ -114,11 +111,26 @@ class ApiService {
         setTimeout(() => onProgress(95), 1500);
       }
 
-      const response = await api
-        .post("upload", {
-          body: formData,
-        })
-        .json<UploadResponse>();
+      // Use fetch directly for file upload to avoid ky's header processing
+      const uploadResponse = await fetch(`${API_BASE_URL}/upload`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+        headers: {
+          Origin: window.location.origin,
+          // Don't set Content-Type - let browser set multipart/form-data with boundary
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json().catch(() => ({
+          error: "Upload failed",
+          message: "Failed to upload file",
+        }));
+        throw new Error(errorData.message || "Upload failed");
+      }
+
+      const response = (await uploadResponse.json()) as UploadResponse;
 
       if (onProgress) onProgress(100);
       return response;
@@ -146,6 +158,9 @@ class ApiService {
             resumeText,
             jobDescription,
             purpose,
+          },
+          headers: {
+            "Content-Type": "application/json",
           },
         })
         .json<AnalysisResponse>();
@@ -175,6 +190,9 @@ class ApiService {
           jobDescription,
           purpose,
         },
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
       return response.blob();
@@ -198,6 +216,9 @@ class ApiService {
           json: {
             emailDraft,
             purpose,
+          },
+          headers: {
+            "Content-Type": "application/json",
           },
         })
         .json<EmailFixResponse>();

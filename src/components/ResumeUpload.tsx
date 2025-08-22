@@ -56,7 +56,7 @@ export function ResumeUpload({
 
   const isValidFileType = (file: File) => {
     const validTypes = [
-      // 'application/pdf', // Temporarily disabled
+      "application/pdf",
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "text/plain",
@@ -163,7 +163,7 @@ export function ResumeUpload({
                   or click to browse files
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Supports DOCX and TXT files
+                  Supports PDF, DOCX, and TXT files
                 </p>
               </>
             )}
@@ -172,7 +172,7 @@ export function ResumeUpload({
               id="resume-upload"
               type="file"
               className="hidden"
-              accept=".doc,.docx,.txt"
+              accept=".pdf,.doc,.docx,.txt"
               onChange={handleFileChange}
               disabled={isUploading}
             />
